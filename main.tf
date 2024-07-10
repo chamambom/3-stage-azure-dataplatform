@@ -68,7 +68,7 @@ module "route_table_gateway_subnet" {
   resource_group_name = var.rg-name
   location            = var.rg-location
   routes = [
-    { name = "Fw-dg", address_prefix = "0.0.0.0/0", next_hop_type = "VirtualAppliance", next_hop_in_ip_address = "10.50.0.4" },
+    { name = "fw-dg", address_prefix = "0.0.0.0/0", next_hop_type = "VirtualAppliance", next_hop_in_ip_address = "10.50.0.4" },
   ]
   disable_bgp_route_propagation = false
   subnet_ids                    = [module.dp-vnet.vnet_subnet_id[0], module.dp-vnet.vnet_subnet_id[1], module.dp-vnet.vnet_subnet_id[2]]
