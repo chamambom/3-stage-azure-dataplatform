@@ -1,0 +1,103 @@
+name: "Terraform Apply - ${GITHUB_RUN_NUMBER}"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*.tf'
+      - '!README.md'
+
+env:
+  TF_STATE_BLOB_ACCOUNT_NAME: ${{ secrets.TF_STATE_BLOB_ACCOUNT_NAME }}
+  TF_STATE_BLOB_CONTAINER_NAME: ${{ secrets.TF_STATE_BLOB_CONTAINER_NAME }}
+  TF_STATE_BLOB_FILE: ${{ secrets.TF_STATE_BLOB_FILE }}
+  TF_STATE_BLOB_SAS_TOKEN: ${{ secrets.TF_STATE_BLOB_SAS_TOKEN }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+jobs:
+  terraform-init:
+    name: Initialise Terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="storage_account_name=$TF_STATE_BLOB_ACCOUNT_NAME" \
+            -backend-config="container_name=$TF_STATE_BLOB_CONTAINER_NAME" \
+            -backend-config="key=$TF_STATE_BLOB_FILE" \
+            -backend-config="sas_token=$TF_STATE_BLOB_SAS_TOKEN"
+
+      - name: Terraform Plan
+        run: |
+          terraform plan -var-file="./envs/dev.tfvars"
+
+  validate-plan:
+    name: Validate the Terraform Plan
+    runs-on: ubuntu-latest
+    needs: terraform-init
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="storage_account_name=$TF_STATE_BLOB_ACCOUNT_NAME" \
+            -backend-config="container_name=$TF_STATE_BLOB_CONTAINER_NAME" \
+            -backend-config="key=$TF_STATE_BLOB_FILE" \
+            -backend-config="sas_token=$TF_STATE_BLOB_SAS_TOKEN"
+
+      - name: Terraform Plan
+        run: |
+          terraform plan -var-file="./envs/dev.tfvars" -out=tfplan
+
+      - name: Upload Terraform Plan
+        uses: actions/upload-artifact@v2
+        with:
+          name: terraform-plan
+          path: tfplan
+
+  deploy-to-tenant:
+    name: Deploy to Tenant
+    runs-on: ubuntu-latest
+    needs: validate-plan
+    steps:
+      - name: Download Terraform Plan
+        uses: actions/download-artifact@v2
+        with:
+          name: terraform-plan
+          path: .
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="storage_account_name=$TF_STATE_BLOB_ACCOUNT_NAME" \
+            -backend-config="container_name=$TF_STATE_BLOB_CONTAINER_NAME" \
+            -backend-config="key=$TF_STATE_BLOB_FILE" \
+            -backend-config="sas_token=$TF_STATE_BLOB_SAS_TOKEN"
+
+      - name: Terraform Apply
+        run: |
+          terraform apply -auto-approve tfplan
+
+  diagnostics:
+    name: Dev Network Diagnostics Utility
+    runs-on: ubuntu-latest
+    steps:
+      - name: Network Diagnostic Commands
+        run: |
+          set -x
+          echo "Pinging Azure Blob Storage endpoint..."
+          timeout 10 ping stdpdevae01.blob.core.windows.net || echo "Ping failed or timed out"
+          echo "Checking DNS resolution..."
+          timeout 10 nslookup stdpdevae01.blob.core.windows.net || echo "DNS resolution failed or timed out"
+          echo "Testing HTTP request..."
+          timeout 10 curl -v "https://stdpdevae01.blob.core.windows.net/?comp=properties&restype=service" || echo "HTTP request failed or timed out"
+          set +x

@@ -568,6 +568,6 @@ NB - Different tests can be applied using 3rd party tools depending on use case.
 
 
 
-## Note - The pipelines in the "MS-Entra-ID-sp-ONLY" folder depend on the dev, uat, and prod infrastructure pipelines. This is because the role assignments for Service Principals, Groups, and Azure Resources have to be applied for existing resources.
+### Note - The pipelines in the "MS-Entra-ID-sp-ONLY" folder depend on the dev, uat, and prod infrastructure pipelines. This is because the role assignments for Service Principals, Groups, and Azure Resources have to be applied for existing resources.
 
 ---
