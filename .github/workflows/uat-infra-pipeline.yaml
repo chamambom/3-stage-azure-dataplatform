@@ -1,4 +1,4 @@
-name: "Terraform Apply - ${GITHUB_RUN_NUMBER}"
+name: "uat-init-plan-apply"
 
 on:
   push:
