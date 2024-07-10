@@ -1,0 +1,36 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  - none
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - group: prod-data-infra-vg
+
+steps:
+  - bash: |
+      terraform init \
+        -backend-config="storage_account_name=$TF_STATE_BLOB_ACCOUNT_NAME" \
+        -backend-config="container_name=$TF_STATE_BLOB_CONTAINER_NAME" \
+        -backend-config="key=$TF_STATE_BLOB_FILE" \
+        -backend-config="sas_token=$TF_STATE_BLOB_SAS_TOKEN"
+    displayName: Terraform Init
+    env:
+      TF_STATE_BLOB_ACCOUNT_NAME: $(tf-state-blob-account)
+      TF_STATE_BLOB_CONTAINER_NAME: $(tf-state-blob-container)
+      TF_STATE_BLOB_FILE: $(tf-state-blob-file)
+      TF_STATE_BLOB_SAS_TOKEN: $(tf-state-sas-token)
+
+  - bash: |
+      terraform destroy  -var-file="./envs/prod.tfvars" -auto-approve  
+    displayName: Terraform Destroy
+    env:
+      ARM_SUBSCRIPTION_ID: $(arm-subscription-id)
+      ARM_CLIENT_ID: $(arm-client-id)
+      ARM_CLIENT_SECRET: $(arm-client-secret)
+      ARM_TENANT_ID: $(arm-tenant-id)

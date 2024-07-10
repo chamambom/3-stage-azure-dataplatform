@@ -1,0 +1,145 @@
+name: "Terraform Apply - $(Date:yyMMdd)$(Rev:rr)"
+trigger:
+  - none
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - group: prod-data-infra-vg
+  
+stages:
+  - stage: TerraformInit
+    displayName: Initialise Terraform
+    jobs:
+      - job: TerraformInit
+        displayName: Run Terraform Init
+        steps:
+          - bash: |
+              terraform init \
+                -backend-config="storage_account_name=$TF_STATE_BLOB_ACCOUNT_NAME" \
+                -backend-config="container_name=$TF_STATE_BLOB_CONTAINER_NAME" \
+                -backend-config="key=$TF_STATE_BLOB_FILE" \
+                -backend-config="sas_token=$TF_STATE_BLOB_SAS_TOKEN"
+            displayName: Terraform Init
+            env:
+              TF_STATE_BLOB_ACCOUNT_NAME: $(tf-state-blob-account)
+              TF_STATE_BLOB_CONTAINER_NAME: $(tf-state-blob-container)
+              TF_STATE_BLOB_FILE: $(tf-state-blob-file)
+              TF_STATE_BLOB_SAS_TOKEN: $(tf-state-sas-token)
+          - bash: |     
+              terraform plan -var-file="./envs/prod.tfvars"
+            displayName: Terraform Plan
+            env:
+              ARM_SUBSCRIPTION_ID: $(arm-subscription-id)
+              ARM_CLIENT_ID: $(arm-client-id)
+              ARM_CLIENT_SECRET: $(arm-client-secret)
+              ARM_TENANT_ID: $(arm-tenant-id)
+
+  - stage: ValidatePlan
+    displayName: Validate the Terraform Plan
+    jobs:
+      - job: TerraformPlan
+        displayName: Run Terraform Plan
+        steps:
+          - bash: |
+              terraform init \
+                -backend-config="storage_account_name=$TF_STATE_BLOB_ACCOUNT_NAME" \
+                -backend-config="container_name=$TF_STATE_BLOB_CONTAINER_NAME" \
+                -backend-config="key=$TF_STATE_BLOB_FILE" \
+                -backend-config="sas_token=$TF_STATE_BLOB_SAS_TOKEN"
+            displayName: Terraform Init
+            env:
+              TF_STATE_BLOB_ACCOUNT_NAME: $(tf-state-blob-account)
+              TF_STATE_BLOB_CONTAINER_NAME: $(tf-state-blob-container)
+              TF_STATE_BLOB_FILE: $(tf-state-blob-file)
+              TF_STATE_BLOB_SAS_TOKEN: $(tf-state-sas-token)
+          - bash: |
+              terraform plan -var-file="./envs/prod.tfvars" -out=$(Build.ArtifactStagingDirectory)/tfplan
+            displayName: Terraform Plan
+            env:
+              ARM_SUBSCRIPTION_ID: $(arm-subscription-id)
+              ARM_CLIENT_ID: $(arm-client-id)
+              ARM_CLIENT_SECRET: $(arm-client-secret)
+              ARM_TENANT_ID: $(arm-tenant-id)
+          # Publish the Plan file
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: "$(Build.Repository.LocalPath)"
+              Contents: |
+                **/*
+                !.git/**/*
+                !.terraform/**/*
+                !.gitignore
+                !README.md
+              TargetFolder: "$(Build.ArtifactStagingDirectory)"
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+              ArtifactName: "drop"
+              publishLocation: "Container"
+              AdditionalFilesToPublish: ".terraform.lock.hcl"
+              
+  - stage: DeployToTenant
+    displayName: Deploy to Tenant
+    dependsOn:
+      - ValidatePlan
+    jobs:
+      - deployment: ApplyToTenant
+        displayName: Apply Terraform to Tenant
+        environment: prod-data-infra-env
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - bash: |
+                    cd $(Pipeline.Workspace)/drop
+                    pwd
+                    terraform init \
+                      -backend-config="storage_account_name=$TF_STATE_BLOB_ACCOUNT_NAME" \
+                      -backend-config="container_name=$TF_STATE_BLOB_CONTAINER_NAME" \
+                      -backend-config="key=$TF_STATE_BLOB_FILE" \
+                      -backend-config="sas_token=$TF_STATE_BLOB_SAS_TOKEN"
+                  displayName: Terraform Init
+                  env:
+                    TF_STATE_BLOB_ACCOUNT_NAME: $(tf-state-blob-account)
+                    TF_STATE_BLOB_CONTAINER_NAME: $(tf-state-blob-container)
+                    TF_STATE_BLOB_FILE: $(tf-state-blob-file)
+                    TF_STATE_BLOB_SAS_TOKEN: $(tf-state-sas-token)
+                - bash: |
+                    cd $(Pipeline.Workspace)/drop
+                    pwd
+                    terraform apply -auto-approve tfplan
+                  displayName: Terraform Apply
+                  env:
+                    ARM_SUBSCRIPTION_ID: $(arm-subscription-id)
+                    ARM_CLIENT_ID: $(arm-client-id)
+                    ARM_CLIENT_SECRET: $(arm-client-secret)
+                    ARM_TENANT_ID: $(arm-tenant-id)
+
+    
+  - stage: Diagnostics
+    displayName: Prod Network Diagnostics Utility
+    jobs:
+      - job: proddiagnostics
+        displayName: Prod Network Diagnostics Utility
+        steps:
+          - bash: |
+              # Enable debug output
+              set -x
+              
+              # Check network connectivity with a timeout
+              echo "Pinging Azure Blob Storage endpoint..."
+              timeout 10 ping stdpprodae01.blob.core.windows.net || echo "Ping failed or timed out"
+
+              # Check DNS resolution with a timeout
+              echo "Checking DNS resolution..."
+              timeout 10 nslookup stdpprodae01.blob.core.windows.net || echo "DNS resolution failed or timed out"
+
+              # Test HTTP request with a timeout
+              echo "Testing HTTP request..."
+              timeout 10 curl -v "https://stdpprodae01.blob.core.windows.net/?comp=properties&restype=service" || echo "HTTP request failed or timed out"
+
+              # Disable debug output
+              set +x
+            displayName: 'Network Diagnostic Commands'
