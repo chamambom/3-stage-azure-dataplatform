@@ -20,7 +20,9 @@ In 2023, I served as a Senior DevOps Engineer on this project, focusing on deplo
 
 **The initial deployment utilized Azure DevOps for CI/CD and Azure with multiple subscriptions. In this repository, I have refactored it to use GitHub Actions workflows targeting an Azure Tenant with a single subscription.**
 
-### Assmptions/Challenges that I experienced while working on the project 
+---
+
+### Assumptions/Challenges that I experienced while working on the project 
 
 -  I was using a self-hosted agent to run my pipelines and experienced race conditions between deploying a Data Lake and a Data Lake private endpoint, as the pipeline repeatedly attempted to resolve the private endpoint private DNS entry. The Data Lake module's output, specifically the Data Lake ID, was required by the private endpoint module to create a private DNS record.
 
@@ -28,6 +30,8 @@ Solution - used a static endpoint id e.g vnet-id= "/subscriptions/x/resourceGrou
 
 - Custom DNS was being used - records were being added manually.
 -
+
+---
 
 ### Recommended changes 
 
@@ -37,6 +41,7 @@ Solution - used a static endpoint id e.g vnet-id= "/subscriptions/x/resourceGrou
 
 I will be refactoring this codebase as I go, making it more efficient and extensible by incorporating new learnings and documenting my procedures and thought process.
 
+---
 ### Landing Zone Design
 
 ![alt text](/img/1_EPvLRwAdrHCxuisbMKYjLw.webp)
@@ -54,7 +59,9 @@ Application, on the other hand, contains the application-specific Landing Zones 
 
 For this project I will focus our attention exclusively on the Dataplatform Infrastructure deployment.
 
-Application/workload Landing Zone - Data platform 
+--- 
+
+### Application/workload Landing Zone - Data platform 
 
 - Dev environment - nonprod subscription
 - Uat environment - nonprod subscription
