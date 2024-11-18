@@ -16,7 +16,10 @@ This project contains resources that deploy the following Azure Data Platform In
 
 ### Background
 
-In 2023, I served as a Senior DevOps Engineer on this project, focusing on deploying the infrastructure for the data resources. The data solution that utilised the infrastructure itself was deployed by another vendor.
+In 2023, I was brought on board as a Senior DevOps Engineer for a project focused on deploying Azure Data infrastructure. My role in this project was to automate the deployment of the Azure Data infrastructure using Terraform. However, the actual data solution utilizing it was handled by another vendor.
+
+**Please note** that all sensitive information (service principals, variable names etc) has been removed, and the code has undergone significant refactoring to improve clarity and maintainability.
+
 
 **The initial deployment utilized Azure DevOps for CI/CD and Azure with multiple subscriptions. In this repository, I have refactored it to use GitHub Actions workflows targeting an Azure Tenant with a single subscription.**
 
@@ -26,10 +29,15 @@ In 2023, I served as a Senior DevOps Engineer on this project, focusing on deplo
 
 -  I was using a self-hosted agent to run my pipelines and experienced race conditions between deploying a Data Lake and a Data Lake private endpoint, as the pipeline repeatedly attempted to resolve the private endpoint private DNS entry. The Data Lake module's output, specifically the Data Lake ID, was required by the private endpoint module to create a private DNS record.
 
-Solution - used a static endpoint id e.g vnet-id= "/subscriptions/x/resourceGroups/rg-dev-ae-01/providers/Microsoft.Network/virtualNetworks/vnet-dev-ae-01"
+Solution - declared a static endpoint id as shown below.
 
-- Custom DNS was being used - records were being added manually.
--
+  e.g vnet-id= "/subscriptions/x/resourceGroups/rg-dev-ae-01/providers/Microsoft.Network/virtualNetworks/vnet-dev-ae-01"
+  e.g vnet-id= "/subscriptions/x/resourceGroups/rg-uat-ae-01/providers/Microsoft.Network/virtualNetworks/vnet-uat-ae-01"
+  e.g vnet-id= "/subscriptions/x/resourceGroups/rg-prod-ae-01/providers/Microsoft.Network/virtualNetworks/vnet-prod-ae-01"
+
+- Custom DNS was being used - records were being added manually. Had to make sure the records for the the datalake, datafactory endpoints were added to the private DNS prior to running the pipelines.
+- The solution relied on existing resources that were part of the platform's landing zone, as specified in the `sharedresources.tf` file. This required me to ensure that certain code blocks were executed first, and the necessary resources were referenced using Terraform's `data` keyword.
+-  
 
 ---
 
