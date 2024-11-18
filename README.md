@@ -31,13 +31,12 @@ In 2023, I was brought on board as a Senior DevOps Engineer for a project focuse
 
 Solution - declared a static endpoint id as shown below.
 
-  - e.g vnet-id= "/subscriptions/x/resourceGroups/rg-dev-ae-01/providers/Microsoft.Network/virtualNetworks/vnet-dev-ae-01"
-  - e.g vnet-id= "/subscriptions/x/resourceGroups/rg-uat-ae-01/providers/Microsoft.Network/virtualNetworks/vnet-uat-ae-01"
-  - e.g vnet-id= "/subscriptions/x/resourceGroups/rg-prod-ae-01/providers/Microsoft.Network/virtualNetworks/vnet-prod-ae-01"
+  - vnet-id= "/subscriptions/x/resourceGroups/rg-dev-ae-01/providers/Microsoft.Network/virtualNetworks/vnet-dev-ae-01"
+  - vnet-id= "/subscriptions/x/resourceGroups/rg-uat-ae-01/providers/Microsoft.Network/virtualNetworks/vnet-uat-ae-01"
+  - vnet-id= "/subscriptions/x/resourceGroups/rg-prod-ae-01/providers/Microsoft.Network/virtualNetworks/vnet-prod-ae-01"
 
 - Custom DNS was being used - records were being added manually. Had to make sure the records for the the datalake, datafactory endpoints were added to the private DNS prior to running the pipelines.
 - The solution relied on existing resources that were part of the platform's landing zone, as specified in the `sharedresources.tf` file. This required me to ensure that certain code blocks were executed first, and the necessary resources were referenced using Terraform's `data` keyword.
--  
 
 ---
 
