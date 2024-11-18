@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~>3.0"
+      version = "~>4.x"
     }
     random = {
       source  = "hashicorp/random"
@@ -25,36 +25,36 @@ provider "azuread" {
 
 # Configure the Microsoft Azure Provider
 provider "azurerm" {
-  skip_provider_registration = true #
+  resource_provider_registrations = none #
   features {}
 
 }
 
 provider "azurerm" {
-  alias                      = "prod"
-  subscription_id            = var.Production
-  skip_provider_registration = true #
+  alias                           = "prod"
+  subscription_id                 = var.Production
+  resource_provider_registrations = none #
   features {}
 }
 
 provider "azurerm" {
-  alias                      = "nonprod"
-  subscription_id            = var.NonProduction
-  skip_provider_registration = true #
+  alias                           = "nonprod"
+  subscription_id                 = var.NonProduction
+  resource_provider_registrations = none #
   features {}
 }
 
 provider "azurerm" {
-  alias                      = "mgmt"
-  subscription_id            = var.Management
-  skip_provider_registration = true #
+  alias                           = "mgmt"
+  subscription_id                 = var.Management
+  resource_provider_registrations = none #
   features {}
 }
 
 provider "azurerm" {
-  alias                      = "connectivity"
-  subscription_id            = var.Connectivity
-  skip_provider_registration = true #
+  alias                           = "connectivity"
+  subscription_id                 = var.Connectivity
+  resource_provider_registrations = none #
   features {}
 
 }
