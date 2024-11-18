@@ -91,10 +91,10 @@ Connectivity Landing Zone
 
 ### Service principals used for each environment.
 
- - *sp-infra-dev* - used by the Dev pipeline to provision resources in the dev environment.
- - *sp-infra-uat* - used by the UAT pipeline to provision resources in the uat environment.
- - *sp-infra-prod* - used by the Prod pipeline to provision resources in the prod environment.
- - *sp-infra-global* - Utilized by the ms-entra-id-sp-pipelines to provision AD Groups/Service principals and to allocate the necessary roles and permissions.
+ - *sp-datainfra-dev* - used by the Dev pipeline to provision resources in the dev environment.
+ - *sp-datainfra-uat* - used by the UAT pipeline to provision resources in the uat environment.
+ - *sp-datainfra-prod* - used by the Prod pipeline to provision resources in the prod environment.
+ - *sp-infra-global* - Utilized by the MS-ENTRA-ID pipeline to provision AD Groups/Service principals and to allocate the necessary roles and permissions.
 
 MS Entra ID snippet 
 
