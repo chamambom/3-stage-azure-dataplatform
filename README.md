@@ -98,7 +98,7 @@ Connectivity Landing Zone
 
 MS Entra ID snippet 
 
-![alt text](/img/image-8.png)
+![alt text](/img/image-3.png)
 
 
 ### If Using Azure DevOps 
