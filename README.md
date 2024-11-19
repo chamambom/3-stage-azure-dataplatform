@@ -36,11 +36,11 @@ I was using a self-hosted agent to run my pipelines and experienced race conditi
 
 Solution - declared a static endpoint id as shown below.
 
-```
-  - vnet-id= "/subscriptions/x/resourceGroups/rg-dev-ae-01/providers/Microsoft.Network/virtualNetworks/vnet-dev-ae-01"
-  - vnet-id= "/subscriptions/x/resourceGroups/rg-uat-ae-01/providers/Microsoft.Network/virtualNetworks/vnet-uat-ae-01"
-  - vnet-id= "/subscriptions/x/resourceGroups/rg-prod-ae-01/providers/Microsoft.Network/virtualNetworks/vnet-prod-ae-01" 
-```
+
+  `- vnet-id= "/subscriptions/x/resourceGroups/rg-dev-ae-01/providers/Microsoft.Network/virtualNetworks/vnet-dev-ae-01"`
+  `- vnet-id= "/subscriptions/x/resourceGroups/rg-uat-ae-01/providers/Microsoft.Network/virtualNetworks/vnet-uat-ae-01"`
+  `- vnet-id= "/subscriptions/x/resourceGroups/rg-prod-ae-01/providers/Microsoft.Network/virtualNetworks/vnet-prod-ae-01"` 
+
 
 Custom DNS was being used - records were being added manually. Had to make sure the records for the the datalake, datafactory endpoints were added to the private DNS prior to running the pipelines.
 
