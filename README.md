@@ -21,8 +21,13 @@ In 2023, I was brought on board as a Senior DevOps Engineer for a project focuse
 **Please note** that all sensitive information (service principals, variable names etc) has been removed, and the code has undergone significant refactoring to improve clarity and maintainability.
 
 
-**The initial deployment utilized Azure DevOps for CI/CD and Azure with multiple subscriptions. In this repository, I have refactored it to use GitHub Actions workflows targeting an Azure Tenant with a single subscription.**
+**The initial deployment utilized Azure DevOps for CI/CD and Azure with multiple subscriptions. If you need to use GitHub Actions workflows you need to change the following** 
 
+- Refactor the code to target an Azure Tenant with a single subscription by updating the providers
+- Refactor the code to replace any instances of the Terraform `data` keyword with resource definitions, ensuring that the resources are created as part of the current codebase. Alternatively, set up these resources separately before executing this code.
+- Create your ci/cd pipelines in the .github/workflows folder. 
+- Update your Actions secrets and variables with service principal values.
+- Set up your remote backend storage beforehand, as it needs to be created before running this code. (Store this information inside actions variables and secrets)
 ---
 
 ### Assumptions/Challenges that I experienced while working on the project 
@@ -122,14 +127,14 @@ Azure DevOps Environments have been set up to facilitate approval processes duri
 
 ### If Using Github Actions  
 
-The above Service principals are managed in the Azure DevOps Library as variable groups, with each environment pipeline assigned its own dedicated service principal.
+The above Service principals are managed in Github Actions secrets and variables, with each environment pipeline assigned its own dedicated service principal.
 
-**Note** - Variable groups store values and secrets that you want to be passed into a YAML pipeline or make available across multiple pipelines. You can share and use variable groups in multiple pipelines in the same project.
+**Note** - Actions secrets and variables store values and secrets that you want to be passed into a YAML pipeline or make available across multiple pipelines. You can share and use variable groups in multiple pipelines in the same project.
 
-- sp-infra-dev = dev-data-infra-vg
-- sp-infra-uat = uat-data-infra-vg
-- sp-infra-prod = prod-data-infra-vg
-- sp-infra-global = ms-entra-id-sp-vg
+- sp-datainfra-dev = dev-data-infra-secret
+- sp-datainfra-uat = uat-data-infra-secret
+- sp-datainfra-prod = prod-data-infra-secret
+- sp-datainfra-global = ms-entra-id-sp-secret
 
 ![alt text](/img/image-6.png)
 
