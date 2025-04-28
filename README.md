@@ -16,7 +16,7 @@ This project contains resources that deploy the following Azure Data Platform In
 
 ### Background
 
-In 2023, I was brought on board as a Senior DevOps Engineer for a project focused on deploying Azure Data infrastructure. My role in this project was to automate the deployment of the Azure Data infrastructure using Terraform. However, the actual data solution utilizing it was handled by another vendor.
+Between 2023 and 2024, I had the opportunity to work on some of the most interesting Terraform projects as a Senior DevOps Engineer, specifically focused on deploying Azure Data infrastructure. My primary responsibility was to automate the deployment of the Azure Data platforms using Terraform, while the development of the actual data solutions built on top of this infrastructure was handled by another vendor.
 
 **Please note** that all sensitive information (service principals, variable names etc) has been removed, and the code has undergone significant refactoring to improve clarity and maintainability.
 
